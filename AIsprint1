@@ -1,0 +1,99 @@
+def ShowStatistics():
+    StatisticsButton.pack()
+    statisticsFrame = Frame(right_frame, width = 600, height = 350, bg = 'skyblue4')
+    statisticsFrame.grid(row = 0, column = 0, padx = 10, pady = 10)
+    nameGame = list(data[0]["name"])
+    Label(statisticsFrame, text = nameGame, bg = 'skyblue4', fg = 'lightgrey', font =( 'Ariel', 8)).grid(row = 0, column = 0, padx = 5, pady = 5)
+def ShowFriends():
+    return
+from tkinter import *
+# import json
+# list = open('steam.json')
+# data = json.load(list)
+# # list(data)
+#
+#
+# data.split(';')
+# print(data)
+import json
+with open('steam.json', 'r') as f:
+    data = json.load(f)
+lst1 = list(data[0])
+print(lst1[1])
+print(data[0]["name"])
+
+print(json.dumps(data, indent=4, sort_keys=True))
+
+
+# Creating Root
+root=Tk()
+root.title('SteamLayout')
+root.maxsize(900,600)
+root.config(bg = 'Lightsteelblue4')
+# Creating frames
+left_frame = Frame(root, width = 200, height = 400, bg = 'RoyalBlue3')
+left_frame.grid(row = 0, column = 0, padx = 10, pady = 2)
+right_frame = Frame(root, width = 650, height = 400, bg = 'RoyalBlue3')
+right_frame.grid(row = 0, column = 1, padx = 10, pady = 5)
+# Creating label
+# Frame in frame
+OptionsFrame = Frame(left_frame, width = 180, height = 380, bg = 'RoyalBlue3')
+OptionsFrame.grid(row = 0, column = 0, padx = 0, pady = 10)
+# Creating option list
+Label(OptionsFrame, text = 'Welkom bij steam!', bg = 'skyblue4', fg = 'lightgrey', relief = 'solid', font = ('Montserrat',16, 'bold' )).grid(row = 0, column = 0, padx = 5, pady = 5)
+Option_list = Frame(OptionsFrame, width = 180, height = 185, bg = 'RoyalBlue3')
+Option_list.grid(row = 1, column = 0, padx = 5, pady = 5)
+# MirellFrame = Frame(right_frame, width = 200, height = 100, bg = 'pink')
+# MirellFrame.grid(row = 0, column = 0, padx = 10, pady = 10)
+# Label(right_frame, text = 'Hoe gaat werk Mireille?', bg = 'yellow', fg = 'red', font = ('Ariel', 20, 'bold')).grid(row = 0, column = 0, padx = 10, pady = 5)
+
+# StatisticsFrame = Frame(SteamFrame, width = 200, height = 400, bg = "blue")
+StatisticsButton = Button(Option_list, text = 'Statistics', command = ShowStatistics, bg = 'skyblue4', fg = 'lightgrey')
+StatisticsButton.pack(padx = 10, pady = 10)
+FriendsButton = Button(Option_list, text = 'Friends', command = ShowFriends, bg = 'skyblue4', fg = 'lightgrey')
+FriendsButton.pack(padx = 10, pady = 10)
+# photo1 = PhotoImage(file="SteamLogo2.0.png")
+# LabelFoto = Label(master = root, image = photo1, bg = "black")
+# LabelFoto.pack()
+# loginframe = Frame(master = root)
+# loginframe.pack(fill = 'both', expand = True)
+# loginUsernameLable = Label(master=loginframe,
+#                             text='Gebruikersnaam:',
+#                             width=30,
+#                             height=1)
+# loginUsernameLable.pack()
+# loginUsername = Entry(master = loginframe)
+# loginUsername.pack(padx = 20)
+# loginwachtwoordLable = Label(master=loginframe,
+#                              text='Wachtwoord:',
+#                              width=30,
+#                              height=0)
+# loginwachtwoordLable.pack(pady=3)
+# loginwachtwoord = Entry(master = loginframe)
+# loginwachtwoord.pack(padx = 20)
+# loginbutton = Button(master = loginframe, text = 'login', command = loginAdmin)
+# loginbutton.pack(padx = 20, pady = 20)
+#
+# Homescreen = Frame(master = root)
+# Homescreen.pack(fill = 'both', expand = True)
+# MessagesButton = Button(master = Homescreen, text='Messages', command = ShowMessages)
+# MessagesButton.pack(padx=20, pady=10)
+# backbutton = Button(master = Homescreen, text = '<', command = ShowLoginFrame)
+# backbutton.pack(padx = 20, pady = 10)
+#
+# Messages = Frame(master=root)
+# Messages.pack(fill='both', expand=True)
+# MessageLable = Label(master=Messages,
+#                          text=bericht)
+# MessageLable.pack()
+# ApproveButton = Button(master=Messages, text='Approve', command=ApprovedMessages )
+# ApproveButton.pack(padx=20, pady=10)
+#
+#
+# DenyButton = Button(master=Messages, text='Deny', command=DeniedMessages)
+# DenyButton.pack(padx=20, pady=10)
+#
+#
+ShowStatistics()
+ShowFriends()
+root.mainloop()
