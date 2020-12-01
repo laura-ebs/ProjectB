@@ -52,45 +52,8 @@ FriendsButton.pack(padx = 10, pady = 10)
 # photo1 = PhotoImage(file="SteamLogo2.0.png")
 # LabelFoto = Label(master = root, image = photo1, bg = "black")
 # LabelFoto.pack()
-# loginframe = Frame(master = root)
-# loginframe.pack(fill = 'both', expand = True)
-# loginUsernameLable = Label(master=loginframe,
-#                             text='Gebruikersnaam:',
-#                             width=30,
-#                             height=1)
-# loginUsernameLable.pack()
-# loginUsername = Entry(master = loginframe)
-# loginUsername.pack(padx = 20)
-# loginwachtwoordLable = Label(master=loginframe,
-#                              text='Wachtwoord:',
-#                              width=30,
-#                              height=0)
-# loginwachtwoordLable.pack(pady=3)
-# loginwachtwoord = Entry(master = loginframe)
-# loginwachtwoord.pack(padx = 20)
-# loginbutton = Button(master = loginframe, text = 'login', command = loginAdmin)
-# loginbutton.pack(padx = 20, pady = 20)
-#
-# Homescreen = Frame(master = root)
-# Homescreen.pack(fill = 'both', expand = True)
-# MessagesButton = Button(master = Homescreen, text='Messages', command = ShowMessages)
-# MessagesButton.pack(padx=20, pady=10)
-# backbutton = Button(master = Homescreen, text = '<', command = ShowLoginFrame)
-# backbutton.pack(padx = 20, pady = 10)
-#
-# Messages = Frame(master=root)
-# Messages.pack(fill='both', expand=True)
-# MessageLable = Label(master=Messages,
-#                          text=bericht)
-# MessageLable.pack()
-# ApproveButton = Button(master=Messages, text='Approve', command=ApprovedMessages )
-# ApproveButton.pack(padx=20, pady=10)
-#
-#
-# DenyButton = Button(master=Messages, text='Deny', command=DeniedMessages)
-# DenyButton.pack(padx=20, pady=10)
-#
-#
+
+
 ShowStatistics()
 ShowFriends()
 root.mainloop()
