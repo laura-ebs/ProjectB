@@ -1,1 +1,528 @@
+from tkinter import *
+import matplotlib.figure
+import matplotlib.patches
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from PIL import ImageTk, Image
+from tkinter import scrolledtext as tkst
+import matplotlib
+from matplotlib.figure import Figure
 
+
+
+
+
+import json
+with open('steam.json', 'r') as f:
+    data = json.load(f)
+
+lst1 = list(data[0])
+print(lst1[1])
+print(data[0]["name"])
+
+print(len(data))
+
+# quick sort functie (extra opdracht)
+def gamesort(lst):
+    def samenvoegen(links, rechts):
+        if len(links) == 0:
+            return rechts
+        elif len(rechts) == 0:
+            return links
+
+        nieuwelijst = []
+        indexlinks = 0
+        indexrechts = 0
+
+        while len(nieuwelijst) < len(links) + len(rechts):
+            if links[indexlinks] <= rechts[indexrechts]:
+                nieuwelijst.append(links[indexlinks])
+                indexlinks += 1
+            else:
+                nieuwelijst.append(rechts[indexrechts])
+                indexrechts += 1
+
+            if indexrechts == len(rechts):
+                nieuwelijst += links[indexlinks:]
+                break
+
+            if indexlinks == len(links):
+                nieuwelijst += rechts[indexrechts:]
+                break
+
+        return nieuwelijst
+
+    def opbreken(lst):
+        if len(lst) < 2:
+            return lst
+
+        middelpunt = len(lst) // 2
+
+        return samenvoegen(links=opbreken(lst[:middelpunt]), rechts=opbreken(lst[middelpunt:]))
+
+    return opbreken(lst)
+
+
+# Dasboard layout
+class steamApp:
+    def __init__(self, parent):
+        try:
+            self.schermgrootte
+        except:
+            self.schermgrootte = True
+
+
+        self.infolst = gameinfo('positive_ratings', 'name', 'release_date', 'developer', 'platforms', 'genres', 'negative_ratings', 'price')
+
+        self.parent = parent
+        self.scherm = Frame(self.parent)
+        self.scherm.config(bg = '#14324a')
+        self.scherm.pack(fill = 'both', expand = True)
+
+        self.taskbalk = Frame(self.scherm, bg = '#171a21')
+        self.taskbalk.pack(fill = 'x', expand = False)
+
+        self.schermsluiten = Button(self.taskbalk, text = 'X', command = self.quit, bg = '#171a21', fg = 'white', font=('NS sans', 15), borderwidth = 0)
+        self.schermsluiten.pack(side = RIGHT, padx = 5)
+
+        self.schermvergroten = Button(self.taskbalk, text = '[<>]', command = self.grootscherm, bg = '#171a21', fg = 'white', font = ('NS sans', 15), borderwidth = 0)
+        self.schermverkleinen = Button(self.taskbalk, text = '[><]', command = self.kleinscherm, bg = '#171a21', fg = 'white', font = ('NS sans', 15), borderwidth = 0)
+        if self.schermgrootte == True:
+            self.schermverkleinen.pack(side = RIGHT, padx = 5)
+        else:
+            self.schermvergroten.pack(side = RIGHT, padx = 5)
+
+        self.schermminimalizeren = Button(self.taskbalk, text = '-', command = self.minimalizeren, bg = '#171a21', fg = 'white', font = ('NS sans', 15), borderwidth = 0)
+        self.schermminimalizeren.pack(side = RIGHT, padx = 5)
+
+
+        self.StatisticsButton = Button(self.taskbalk, text = 'STATISTICS', command = self.ShowStatistics, bg = '#171a21', fg = 'white', borderwidth = 0, font = ('ariel', 15, 'bold'))
+        self.StatisticsButton.pack(side = LEFT, padx = 13, pady = 5)
+        self.gamesButton = Button(self.taskbalk, text = 'GAMES', command = self.Showgames, bg = '#171a21', fg = 'white', borderwidth = 0, font = ('ariel', 15, 'bold'))
+        self.gamesButton.pack(side = LEFT, padx = 13, pady = 5)
+
+    def Showgames(self):
+        self.scherm.destroy()
+        self.__init__(root)
+        self.suggestielst = []
+        self.ratinglst = gameinfo('positive_ratings', 'name', 'release_date', 'developer', 'platforms', 'genres', 'negative_ratings', 'price')
+        self.popularGame = self.ratinglst[-1]
+        self.gameFrame = Frame(self.scherm, bg = '#14324a')
+        self.gameFrame.pack(fill = 'both', expand = True, pady = 5)
+
+        self.Labelgames = Label(self.gameFrame, text='Games', bg='#14324a', fg='white', font=('ariel', 20, 'bold'))
+        self.Labelgames.pack(side = TOP, pady = 30)
+
+        self.entryGames = Entry(self.gameFrame, bg = 'white', fg = 'black')
+        self.entryGames.pack()
+
+        self.searchbutton = Button(self.gameFrame, command = self.showGame, bg = '#14324a', fg = 'white', text = 'search')
+        self.searchbutton.pack(pady = 10)
+
+    def ShowStatistics(self):
+        self.scherm.destroy()
+        self.__init__(root)
+
+        self.statisticsFrame = Frame(self.scherm, bg = '#14324a')
+        self.statisticsFrame.pack(fill = 'both', expand = True, pady = 5)
+
+        self.Labelwelkom = Label(self.statisticsFrame, text='Statistics', bg='#14324a', fg='white', font=('ariel', 20, 'bold'))
+        self.Labelwelkom.pack(pady = 10)
+
+        self.keuzeLabel = Label(self.statisticsFrame, text = 'Welke gegevens wilt u bekijken?', bg = '#14324a', fg = 'white', font=('ariel', 15))
+        self.keuzeLabel.place(x = 500, y = 150)
+
+        self.percentagebutton = Button(self.statisticsFrame, command = self.genrepercentage, text = 'genres', bg = '#14324a', fg = 'white', font = ('ariel', 12))
+        self.percentagebutton.place(x = 475, y = 200)
+
+        self.playtimebutton = Button(self.statisticsFrame, command=self.checkboxes, text='average playtime', bg='#14324a', fg='white', font=('ariel', 12))
+        self.playtimebutton.place(x = 700, y = 200)
+
+    def genrepercentage(self):
+        self.statisticsFrame.destroy()
+
+
+        totalGames = len(data)
+        actionGamescount = 0
+        casualGamescount = 0
+        adventureGamescount = 0
+        indieGamescount = 0
+        simulationGamescount = 0
+        rPGGamescount = 0
+        strategyGamescount = 0
+        racingGamescount = 0
+        sportsGamescount = 0
+        earlyAccessGamescount = 0
+        freetoPlayGamescount = 0
+        AccountingGamescount = 0
+        AnimationandModelingGamescount = 0
+        AudioProductionGamescount = 0
+        DesignandIllustrationGamescount = 0
+        DocumentaryGamescount = 0
+        EducationGamescount = 0
+        GameDevelopmentGamescount = 0
+        GoreGamescount = 0
+        MassivelyMultiplayerGamescount = 0
+        NudityGamescount = 0
+        PhotoEditingGamescount = 0
+        SexualContentGamescount = 0
+        SoftwareTrainingGamescount = 0
+        TutorialGamescount = 0
+        UtilitiesGamescount = 0
+        VideoProductionGamescount = 0
+        ViolentGamescount = 0
+        WebPublishingGamescount = 0
+
+
+        for genre in self.infolst:
+            if 'Action' in genre[5]:
+                actionGamescount += 1
+
+        for genre in self.infolst:
+            if 'Casual' in genre[5]:
+                casualGamescount += 1
+
+        for genre in self.infolst:
+            if 'Adventure' in genre[5]:
+                adventureGamescount += 1
+
+        for genre in self.infolst:
+            if 'Indie' in genre[5]:
+                indieGamescount += 1
+
+        for genre in self.infolst:
+            if 'Simulation' in genre[5]:
+                simulationGamescount += 1
+
+        for genre in self.infolst:
+            if 'RPG' in genre[5]:
+                rPGGamescount += 1
+
+        for genre in self.infolst:
+            if 'Strategy' in genre[5]:
+                strategyGamescount += 1
+
+        for genre in self.infolst:
+            if 'Racing' in genre[5]:
+                racingGamescount += 1
+
+        for genre in self.infolst:
+            if 'Sports' in genre[5]:
+                sportsGamescount += 1
+
+        for genre in self.infolst:
+            if 'Early Acces' in genre[5]:
+                earlyAccessGamescount += 1
+
+        for genre in self.infolst:
+            if 'Free to Play' in genre[5]:
+                freetoPlayGamescount += 1
+
+        for genre in self.infolst:
+            if 'Accounting' in genre[5]:
+                AccountingGamescount += 1
+
+        for genre in self.infolst:
+            if 'Animation & Modeling' in genre[5]:
+                AnimationandModelingGamescount += 1
+
+        for genre in self.infolst:
+            if 'Audio Production' in genre[5]:
+                AudioProductionGamescount += 1
+
+        for genre in self.infolst:
+            if 'Design & Illustration' in genre[5]:
+                DesignandIllustrationGamescount += 1
+
+        for genre in self.infolst:
+            if 'Documentary' in genre[5]:
+                DocumentaryGamescount += 1
+
+        for genre in self.infolst:
+            if 'Education' in genre[5]:
+                EducationGamescount += 1
+
+        for genre in self.infolst:
+            if 'Game Development' in genre[5]:
+                GameDevelopmentGamescount += 1
+
+        for genre in self.infolst:
+            if 'Gore' in genre[5]:
+                GoreGamescount += 1
+
+        for genre in self.infolst:
+            if 'Massively Multiplayer' in genre[5]:
+                MassivelyMultiplayerGamescount += 1
+
+        for genre in self.infolst:
+            if 'Nudity' in genre[5]:
+                NudityGamescount += 1
+
+        for genre in self.infolst:
+            if 'Photo Editing' in genre[5]:
+                PhotoEditingGamescount += 1
+
+        for genre in self.infolst:
+            if 'Sexual Content' in genre[5]:
+                SexualContentGamescount += 1
+
+        for genre in self.infolst:
+            if 'Software Training' in genre[5]:
+                SoftwareTrainingGamescount += 1
+
+        for genre in self.infolst:
+            if 'Utilities' in genre[5]:
+                UtilitiesGamescount += 1
+
+        for genre in self.infolst:
+            if 'Video Production' in genre[5]:
+                VideoProductionGamescount += 1
+
+        for genre in self.infolst:
+            if 'Violent' in genre[5]:
+                ViolentGamescount += 1
+
+        for genre in self.infolst:
+            if 'Web Publishing' in genre[5]:
+                WebPublishingGamescount += 1
+
+        for genre in self.infolst:
+            if 'Tutorial' in genre[5]:
+                TutorialGamescount += 1
+
+        percentage1 = int((actionGamescount / totalGames) * 100)
+        percentage2= int((adventureGamescount / totalGames) * 100)
+        percentage3 = int((casualGamescount / totalGames) * 100)
+        percentage4 = int((indieGamescount / totalGames) * 100)
+        percentage5 = int((simulationGamescount / totalGames) * 100)
+        percentage6 = int((rPGGamescount / totalGames) * 100)
+        percentage7 = int((strategyGamescount / totalGames) * 100)
+        percentage8 = int((racingGamescount/ totalGames) * 100)
+        percentage9 = int((sportsGamescount/ totalGames) * 100)
+        percentage10 = int((earlyAccessGamescount/ totalGames) * 100)
+        percentage11 = int((freetoPlayGamescount/ totalGames) * 100)
+        percentage12 = int((AccountingGamescount/ totalGames) * 100)
+        percentage13 = int((AnimationandModelingGamescount/ totalGames) * 100)
+        percentage14 = int((AudioProductionGamescount/ totalGames) * 100)
+        percentage15 = int((DesignandIllustrationGamescount/ totalGames) * 100)
+        percentage16 = int((DocumentaryGamescount/ totalGames) * 100)
+        percentage17 = int((EducationGamescount/ totalGames) * 100)
+        percentage18 = int((GameDevelopmentGamescount/ totalGames) * 100)
+        percentage19 = int((GoreGamescount/ totalGames) * 100)
+        percentage20 = int((MassivelyMultiplayerGamescount/ totalGames) * 100)
+        percentage21 = int((NudityGamescount/ totalGames) * 100)
+        percentage22 = int((PhotoEditingGamescount/ totalGames) * 100)
+        percentage23 = int((SexualContentGamescount/ totalGames) * 100)
+        percentage24 = int((SoftwareTrainingGamescount/ totalGames) * 100)
+        percentage25 = int((TutorialGamescount/ totalGames) * 100)
+        percentage26 = int((UtilitiesGamescount/ totalGames) * 100)
+        percentage27 = int((VideoProductionGamescount/ totalGames) * 100)
+        percentage28 = int((ViolentGamescount/ totalGames) * 100)
+        percentage29 = int((WebPublishingGamescount/ totalGames) * 100)
+
+        self.genreFrame = Frame(self.scherm, bg = '#14324a')
+        self.genreFrame.pack(fill = 'x', expand = True)
+
+        NUM_COLORS = 29
+        cm = plt.get_cmap('gist_rainbow')
+
+
+        fig = matplotlib.figure.Figure(figsize=(13, 10))
+        ax = fig.add_subplot(111)
+        ax.set_prop_cycle(color=[cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+        ax.pie([percentage12, percentage1, percentage2, percentage13, percentage14, percentage3, percentage15, percentage16, percentage10, percentage17, percentage11, percentage18, percentage19, percentage4, percentage20, percentage21, percentage22, percentage6, percentage8, percentage23, percentage5, percentage24, percentage9, percentage7, percentage25, percentage26, percentage27, percentage28, percentage29])
+        ax.legend(bbox_to_anchor=(1, 1.1), labels=['Accounting', 'Action', 'Adventure', 'Animation & Modeling', 'Audio Production', 'Casual', 'Design & Illustration', 'Documentary', 'Early Access', 'Education', 'Free to Play', 'Game Development', 'Gore', 'Indie', 'Massively Multiplayer', 'Nudity', 'Photo Editing', 'RPG', 'Racing', 'Sexual Content', 'Simulation', 'Software Training', 'Sports', 'Strategy', 'Tutorial', 'Utilities', 'Video Production', 'Violent', 'Web Publishing'])
+
+        circle = matplotlib.patches.Circle((0, 0), 0.7, color='#14324a')
+        ax.add_artist(circle)
+
+
+        canvas = FigureCanvasTkAgg(fig, master= self.genreFrame)
+        canvas.get_tk_widget().pack()
+        canvas.draw()
+
+    def showGame(self):
+        try:
+            self.gameLabel.destroy()
+        except:
+            'hippy'
+
+        self.booplst = []
+        self.entrygamesget = self.entryGames.get()
+        for spel in self.ratinglst:
+            if self.entrygamesget == spel[1]:
+                self.booplst.append(spel)
+
+
+        if len(self.booplst) > 0:
+            boop = self.booplst[0]
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=boop[1], font=('Montserrat', 15))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=boop[2], font=('Montserrat', 10))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=boop[3], font=('Montserrat', 10))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=('Available', 'on', boop[4]), font=('Montserrat', 10))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=('Genre:', boop[5]), font=('Montserrat', 10))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=('Likes:', boop[0]), font=('Montserrat', 10))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='black', text=('Dislikes:', boop[6]), font=('Montserrat', 10))
+            self.gameLabel.pack()
+            self.gameLabel = Label(self.gameFrame, bg='#2a475e', fg='white', text=('€', boop[7]), font=('Montserrat', 9))
+            self.gameLabel.pack()
+        else:
+            self.noresultsLabel = Label(self.gameFrame, bg = '#2a475e', fg = 'white', text = 'Er zijn geen resultaten voor uw zoek opdracht, kijk of u het goed heeft gespeld en probeer het opnieuw')
+            self.noresultsLabel.pack()
+        self.entryGames.destroy()
+        self.searchbutton.config(text = 'opnieuw zoeken', command = self.opnieuwzoeken)
+
+    def opnieuwzoeken(self):
+        self.gameFrame.destroy()
+        self.Showgames()
+
+    def quit(self):
+        self.parent.destroy()
+
+    def grootscherm(self):
+        root.attributes('-fullscreen', True)
+        self.schermgrootte = True
+        self.scherm.destroy()
+        self.__init__(root)
+
+    def kleinscherm(self):
+        root.attributes('-fullscreen', False)
+        root.geometry('1200x600')
+        self.schermgrootte = False
+        self.scherm.destroy()
+        self.__init__(root)
+
+    def minimalizeren(self):
+        root.iconify()
+
+
+    def checkboxes(self):
+        self.scherm.destroy()
+        self.__init__(root)
+        self.checkboxFrame = Frame(self.scherm, bg = '#14324a')
+        self.checkboxFrame.pack(fill = 'both', expand = True)
+
+        self.varcheckbox1 = IntVar()
+        self.varcheckbox2 = IntVar()
+        self.varcheckbox3 = IntVar()
+        self.varcheckbox4 = IntVar()
+        self.varcheckbox5 = IntVar()
+        self.varcheckbox6 = IntVar()
+        self.varcheckbox7 = IntVar()
+
+        self.actionCheckbox = Checkbutton(self.checkboxFrame, bg = '#14324a', text = 'Action', fg = '#171a21', variable = self.varcheckbox1, font = ('ariel', 12))
+        self.actionCheckbox.place(x = 550, y = 120)
+        self.casualCheckbox = Checkbutton(self.checkboxFrame, bg='#14324a', text='Casual', fg='#171a21', variable=self.varcheckbox2, font=('ariel', 12))
+        self.casualCheckbox.place(x=550, y= 150)
+        self.adventureCheckbox = Checkbutton(self.checkboxFrame, bg='#14324a', text='Adventure', fg='#171a21', variable=self.varcheckbox3, font=('ariel', 12))
+        self.adventureCheckbox.place(x=550, y=180)
+        self.rpgCheckbox = Checkbutton(self.checkboxFrame, bg='#14324a', text='RPG', fg='#171a21', variable=self.varcheckbox4, font=('ariel', 12))
+        self.rpgCheckbox.place(x=550, y=210)
+        self.racingCheckbox = Checkbutton(self.checkboxFrame, bg='#14324a', text='Racing', fg='#171a21', variable=self.varcheckbox5, font=('ariel', 12))
+        self.racingCheckbox.place(x=550, y=240)
+        self.indieCheckbox = Checkbutton(self.checkboxFrame, bg='#14324a', text='Indie', fg='#171a21', variable=self.varcheckbox6, font=('ariel', 12))
+        self.indieCheckbox.place(x=550, y=270)
+        self.sportsCheckbox = Checkbutton(self.checkboxFrame, bg='#14324a', text='Sports', fg='#171a21', variable=self.varcheckbox7, font=('ariel', 12))
+        self.sportsCheckbox.place(x=550, y=300)
+
+        self.continueButton = Button(self.checkboxFrame, command = self.staafdiagram , bg = '#2a475e', fg = 'white', text = 'Continue', font=('ariel', 12))
+        self.continueButton.place(x = 550, y = 350)
+
+
+    def staafdiagram(self):
+        self.checkboxInfo = []
+        self.checkboxInfo.append(self.varcheckbox1.get())
+        self.checkboxInfo.append(self.varcheckbox2.get())
+        self.checkboxInfo.append(self.varcheckbox3.get())
+        self.checkboxInfo.append(self.varcheckbox4.get())
+        self.checkboxInfo.append(self.varcheckbox5.get())
+        self.checkboxInfo.append(self.varcheckbox6.get())
+        self.checkboxInfo.append(self.varcheckbox7.get())
+
+
+        self.scherm.destroy()
+        self.__init__(root)
+        self.staafdiagramFrame = Frame(self.scherm, bg='#14324a')
+        self.staafdiagramFrame.pack(fill='x', expand=True)
+
+        matplotlib.use('TkAgg')
+
+
+        gamegenres = ['Action', 'Casual', 'Adventure', 'RPG', 'Racing', 'Indie', 'Sports']
+        timeplayed = []
+
+        gamegegevens = gameinfo('genres', 'average_playtime', 'appid', 'name', 'price', 'owners', 'english', 'platforms')
+        for genre in gamegenres:
+            times = 0
+            timeslst = []
+            for info in gamegegevens:
+                if genre in info[0]:
+                    times += info[1]
+                    timeslst.append(info)
+            if times == 0:
+                timeplayed.append(1)
+            else:
+                timeplayed.append(times / len(timeslst))
+
+        spelgenres = []
+        speeltijd = []
+        teller = 0
+
+        for getal in self.checkboxInfo:
+            if getal == 1:
+                spelgenres.append(gamegenres[teller])
+                speeltijd.append(timeplayed[teller])
+            teller += 1
+
+        figure = Figure(figsize=(6, 6), dpi=100)
+        sub = figure.add_subplot(111)
+
+        rects1 = sub.bar(spelgenres, speeltijd, 0.8)
+        canvas = FigureCanvasTkAgg(figure, master=self.staafdiagramFrame)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+
+
+
+
+def gameinfo(input1, input2, input3, input4, input5, input6, input7, input8):
+    sortindata = []
+    unsorteddatalst = []
+    for game in data:
+        gameinput1 = game[input1]
+        gameinput2 = game[input2]
+        gameinput3 = game[input3]
+        gameinput4 = game[input4]
+        gameinput5 = game[input5]
+        gameinput6 = game[input6]
+        gameinput7 = game[input7]
+        gameinput8 = game[input8]
+        unsorteddatalst.append(gameinput1)
+        unsorteddatalst.append(gameinput2)
+        unsorteddatalst.append(gameinput3)
+        unsorteddatalst.append(gameinput4)
+        unsorteddatalst.append(gameinput5)
+        unsorteddatalst.append(gameinput6)
+        unsorteddatalst.append(gameinput7)
+        unsorteddatalst.append(gameinput8)
+        gamedatalst = tuple(unsorteddatalst)
+        sortindata.append(gamedatalst)
+        unsorteddatalst.clear()
+
+    return gamesort(sortindata)
+
+
+
+
+root = Tk()
+root.config(bg = '#2a475e')
+root.attributes('-fullscreen', True)
+mywin = steamApp(root)
+root.mainloop()
