@@ -17,11 +17,6 @@ import json
 with open('steam.json', 'r') as f:
     data = json.load(f)
 
-lst1 = list(data[0])
-print(lst1[1])
-print(data[0]["name"])
-
-print(len(data))
 
 # quick sort functie (extra opdracht)
 def gamesort(lst):
